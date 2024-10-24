@@ -39,7 +39,7 @@ func (c conditionsMustHaveProperSSATags) Validate(crd *apiextensionsv1.CustomRes
 					return false
 				}
 
-				if !strings.Contains(simpleLocation.String(), ".conditions") {
+				if !strings.HasSuffix(simpleLocation.String(), ".conditions") {
 					return false
 				}
 
