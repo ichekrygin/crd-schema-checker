@@ -1,6 +1,7 @@
 package manifestcomparators
 
 import (
+	"strings"
 	"sync"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -118,4 +119,18 @@ func schemaHasRecurse(s *apiextensionsv1.JSONSchemaProps, fldPath, simpleLocatio
 	defer schemaPool.Put(schema)
 	*schema = *s
 	return SchemaHas(schema, fldPath, simpleLocation, ancestry, pred)
+}
+
+// SkipMarker is a "skip-marker-prefix:rule-name" string value used in comments to
+// identify properties with skipped named validation.
+func SkipMarker(ruleName string) string {
+	return "crd-schema-checker.skip:" + ruleName
+}
+
+// HasSkipMarker helper check schema property description ancestry path for skip-validation markers.
+// Returns true if the property or any of its ancestor has skip-validation marker with matching rule name.
+func HasSkipMarker(ruleName string, path []*apiextensionsv1.JSONSchemaProps) bool {
+	return len(path) > 0 &&
+		(strings.Contains(path[len(path)-1].Description, SkipMarker(ruleName)) ||
+			HasSkipMarker(ruleName, path[:len(path)-1]))
 }
